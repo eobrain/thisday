@@ -1,9 +1,12 @@
 import { thisDay } from './wikipedia.js'
+import {addPersonality } from './llm.js'
 
-for (let i = 10; i < 1000; i += 10) {
-  console.log({ i })
-  const { found, text, then, weekdayString } = await thisDay(i)
+async function thisDayBot (yearsAgo) {
+  const { found, text, then, weekdayString } = await thisDay(yearsAgo)
   if (found) {
-    console.log({ text, then, weekdayString })
+    const headlines = await addPersonality(text)
+    console.log({ text, then, weekdayString, headlines })
   }
 }
+
+thisDayBot(100)
