@@ -1,11 +1,17 @@
 import { thisDay } from './wikipedia.js'
-import {addPersonality } from './llm.js'
+import { addPersonality } from './llm.js'
 
 async function thisDayBot (yearsAgo) {
-  const { found, text, then, weekdayString } = await thisDay(yearsAgo)
+  const { found, text, then, citation } = await thisDay(yearsAgo)
   if (found) {
-    const headlines = await addPersonality(text)
-    console.log({ text, then, weekdayString, headlines })
+    const longDateString = then.toLocaleDateString('en-US',
+      { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    const headlines = await addPersonality(`On ${longDateString}, ${text}`)
+    console.log(`${longDateString}:
+
+${headlines}
+
+${citation}`)
   }
 }
 
