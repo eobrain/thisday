@@ -34,17 +34,25 @@ export async function thisDay (yearsAgo) {
   const html = await response.text()
 
   const root = parse(html)
-  const id = `${monthString}_${day},_${year}_(${weekdayString})`
-  const nephewSpan = root.getElementById(id)
-  if (!nephewSpan) {
-    console.log(`cannod find id="${id}"`)
-    return { found: false, then }
-  }
-  const parent = nephewSpan.parentNode
-  const section = parent.nextSibling
-  const found = true
-  const text = filter(section.innerText)
+  const ids = [
+    `${monthString}_${day},_${year}_(${weekdayString})`,
+    `${weekdayString},_${monthString}_${day},_${year}`
+  ]
+  const citations = []
+  for (const id of ids) {
+    const nephewSpan = root.getElementById(id)
+    const citation = `${url}#${id}`
+    citations.push(citation)
+    if (!nephewSpan) {
+      continue
+    }
+    const parent = nephewSpan.parentNode
+    const section = parent.nextSibling
+    const found = true
+    const text = filter(section.innerText)
 
-  const citation = `${url}#${id}`
-  return { found, text, then, citation }
+    return { found, text, then, citation }
+  }
+  console.log(`cannot find any of "${citations.join('", "')}"`)
+  return { found: false, then }
 }
