@@ -28,31 +28,49 @@ export async function thisDay (yearsAgo) {
   const then = new Date(year, month, day)
   const weekdayString = then.toLocaleDateString('en-US', { weekday: 'long' })
 
-  // const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-html/${monthString}_${year}`)
-  const url = `https://en.m.wikipedia.org/wiki/${monthString}_${year}`
-  const response = await fetch(url)
-  const html = await response.text()
+  // const monthResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-html/${monthString}_${year}`)
+  const monthUrl = `https://en.m.wikipedia.org/wiki/${monthString}_${year}`
+  const monthResponse = await fetch(monthUrl)
+  const monthHtml = await monthResponse.text()
 
-  const root = parse(html)
+  const monthRoot = parse(monthHtml)
   const ids = [
     `${monthString}_${day},_${year}_(${weekdayString})`,
     `${weekdayString},_${monthString}_${day},_${year}`
   ]
   const citations = []
   for (const id of ids) {
-    const nephewSpan = root.getElementById(id)
-    const citation = `${url}#${id}`
+    const nephewSpan = monthRoot.getElementById(id)
+    const citation = `${monthUrl}#${id}`
     citations.push(citation)
     if (!nephewSpan) {
       continue
     }
+    const found = true
     const parent = nephewSpan.parentNode
     const section = parent.nextSibling
-    const found = true
     const text = filter(section.innerText)
 
     return { found, text, then, citation }
   }
   console.log(`cannot find any of "${citations.join('", "')}"`)
+
+  const yearUrl = `https://en.m.wikipedia.org/wiki/${year}`
+  const yearResponse = await fetch(yearUrl)
+  const yearHtml = await yearResponse.text()
+
+  const yearRoot = parse(yearHtml)
+
+  for (const li of yearRoot.querySelectorAll('li')) {
+    const pattern = `${monthString} ${day} . `
+    if (li.innerText.match(pattern) && !li.innerText.match(/ \(d\. /)) {
+      const found = true
+      const text = li.innerText.slice(pattern.length)
+      const citation = yearUrl
+      console.log(text)
+      return { found, text, then, citation }
+    }
+  }
+
   return { found: false, then }
 }
