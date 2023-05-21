@@ -61,16 +61,16 @@ export async function thisDay (yearsAgo) {
 
   const yearRoot = parse(yearHtml)
 
+  const pattern = `${monthString} ${day} . `
+  const citation = yearUrl
   for (const li of yearRoot.querySelectorAll('li')) {
-    const pattern = `${monthString} ${day} . `
     if (li.innerText.match(pattern) && !li.innerText.match(/ \(d\. /)) {
       const found = true
       const text = li.innerText.slice(pattern.length)
-      const citation = yearUrl
       console.log(text)
       return { found, text, then, citation }
     }
   }
-
+  console.log(`cannot find /${pattern}/ in "${citation}"`)
   return { found: false, then }
 }
