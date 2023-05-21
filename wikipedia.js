@@ -31,46 +31,54 @@ export async function thisDay (yearsAgo) {
   // const monthResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-html/${monthString}_${year}`)
   const monthUrl = `https://en.m.wikipedia.org/wiki/${monthString}_${year}`
   const monthResponse = await fetch(monthUrl)
-  const monthHtml = await monthResponse.text()
+  if (monthResponse.status !== 200) {
+    console.log(`Got status ${monthResponse.status} from ${monthUrl}`)
+  } else {
+    const monthHtml = await monthResponse.text()
 
-  const monthRoot = parse(monthHtml)
-  const ids = [
-    `${monthString}_${day},_${year}_(${weekdayString})`,
-    `${weekdayString},_${monthString}_${day},_${year}`
-  ]
-  const citations = []
-  for (const id of ids) {
-    const nephewSpan = monthRoot.getElementById(id)
-    const citation = `${monthUrl}#${id}`
-    citations.push(citation)
-    if (!nephewSpan) {
-      continue
+    const monthRoot = parse(monthHtml)
+    const ids = [
+      `${monthString}_${day},_${year}_(${weekdayString})`,
+      `${weekdayString},_${monthString}_${day},_${year}`
+    ]
+    const citations = []
+    for (const id of ids) {
+      const nephewSpan = monthRoot.getElementById(id)
+      const citation = `${monthUrl}#${id}`
+      citations.push(citation)
+      if (!nephewSpan) {
+        continue
+      }
+      const found = true
+      const parent = nephewSpan.parentNode
+      const section = parent.nextSibling
+      const text = filter(section.innerText)
+
+      return { found, text, then, citation }
     }
-    const found = true
-    const parent = nephewSpan.parentNode
-    const section = parent.nextSibling
-    const text = filter(section.innerText)
-
-    return { found, text, then, citation }
+    console.log(`cannot find any of\n  ${citations.join('\n  ')}`)
   }
-  console.log(`cannot find any of "${citations.join('", "')}"`)
 
   const yearUrl = `https://en.m.wikipedia.org/wiki/${year}`
   const yearResponse = await fetch(yearUrl)
-  const yearHtml = await yearResponse.text()
+  if (yearResponse.status !== 200) {
+    console.log(`Got status ${yearResponse.status} from ${yearUrl}`)
+  } else {
+    const yearHtml = await yearResponse.text()
 
-  const yearRoot = parse(yearHtml)
+    const yearRoot = parse(yearHtml)
 
-  const pattern = `${monthString} ${day} . `
-  const citation = yearUrl
-  for (const li of yearRoot.querySelectorAll('li')) {
-    if (li.innerText.match(pattern) && !li.innerText.match(/ \(d\. /)) {
-      const found = true
-      const text = li.innerText.slice(pattern.length)
-      console.log(text)
-      return { found, text, then, citation }
+    const pattern = `${monthString} ${day} . `
+    const citation = yearUrl
+    for (const li of yearRoot.querySelectorAll('li')) {
+      if (li.innerText.match(pattern) && !li.innerText.match(/ \(d\. /)) {
+        const found = true
+        const text = li.innerText.slice(pattern.length)
+        console.log(text)
+        return { found, text, then, citation }
+      }
     }
+    console.log(`cannot find /${pattern}/ in ${citation}`)
   }
-  console.log(`cannot find /${pattern}/ in "${citation}"`)
   return { found: false, then }
 }
