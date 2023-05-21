@@ -1,5 +1,6 @@
 import { thisDay } from './wikipedia.js'
 import { addPersonality } from './llm.js'
+import { toot } from './mastodon.js'
 
 const MAX_POST = 500
 const URL_COUNT = 23
@@ -20,6 +21,7 @@ async function thisDayBot (yearsAgo) {
     const postMinusCitation = longDateString + ':\n\n' + headlines
     const post = truncate(postMinusCitation, MAX_POST - 2 - URL_COUNT) + '\n\n' + citation
     console.log(post)
+    toot(post)
   }
 }
 
