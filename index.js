@@ -21,8 +21,13 @@ async function thisDayBot (yearsAgo) {
     const postMinusCitation = longDateString + ':\n\n' + headlines
     const post = truncate(postMinusCitation, MAX_POST - 2 - URL_COUNT) + '\n\n' + citation
     console.log(post)
+
     toot(post)
   }
 }
 
-thisDayBot(100)
+if (process.argv.length <= 2) {
+  console.log('Missing years-ago argument.')
+} else {
+  thisDayBot(process.argv[2])
+}
