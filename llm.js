@@ -9,17 +9,27 @@ const configuration = new Configuration({
 })
 const openai = new OpenAIApi(configuration)
 
-export async function addPersonality (text) {
+export async function addPersonality (text, lang) {
+  const content = ({
+    en: `
+    Rewrite the following text in the style of ${STYLE}:
+  
+    ${text}
+    
+    `,
+    fr: `
+    Réécrivez le texte suivant dans le style des titres de journaux populaires:
+  
+    ${text}
+    
+    `
+  })[lang]
+
   const completion = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
     messages: [{
       role: 'user',
-      content: `
-  Rewrite the following text in the style of ${STYLE}:
-
-  ${text}
-  
-  `
+      content
     }]
   })
   return completion.data.choices[0].message.content

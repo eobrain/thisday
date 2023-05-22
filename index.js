@@ -12,12 +12,15 @@ function truncate (text, max) {
   return text.slice(0, max - 1) + '…'
 }
 
-async function thisDayBot (yearsAgo) {
-  const { found, text, then, citation } = await thisDay(yearsAgo)
+async function thisDayBot (yearsAgo, lang) {
+  const region = ({ en: 'US', fr: 'FR' })[lang]
+  const locale = lang + '-' + region
+
+  const { found, text, then, citation } = await thisDay(yearsAgo, lang, locale)
   if (found) {
-    const longDateString = then.toLocaleDateString('en-US',
+    const longDateString = then.toLocaleDateString(locale,
       { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-    const headlines = await addPersonality(`On ${longDateString}, ${text}`)
+    const headlines = await addPersonality(`${longDateString}, ${text}`, lang)
     const postMinusCitation = longDateString + ':\n\n' + headlines
     const post = truncate(postMinusCitation, MAX_POST - 2 - URL_COUNT) + '\n\n' + citation
     console.log(post)
@@ -26,8 +29,8 @@ async function thisDayBot (yearsAgo) {
   }
 }
 
-if (process.argv.length <= 2) {
-  console.log('Missing years-ago argument.')
+if (process.argv.length <= 3) {
+  console.log('Missing arguments:   yearsAgo language')
 } else {
-  thisDayBot(process.argv[2])
+  thisDayBot(process.argv[2], process.argv[3])
 }

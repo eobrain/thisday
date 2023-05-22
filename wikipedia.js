@@ -1,4 +1,5 @@
 import { parse } from 'node-html-parser'
+// import { pp } from 'passprint'
 
 function filter (text) {
   const lines = text.split('\n')
@@ -18,45 +19,91 @@ function filter (text) {
   return out.join('\n')
 }
 
-export async function thisDay (yearsAgo) {
+function pruneDom ($monthRoot) {
+
+}
+
+function taillerDom ($monthRoot) {
+  const $span = $monthRoot.getElementById('Naissances')
+  if (!$span) {
+    return
+  }
+  const $ul = $span.parentNode.nextElementSibling.nextElementSibling
+  $ul.parentNode.removeChild($ul)
+}
+
+function findElementInMonthArticle ($monthRoot, monthUrl, monthString, day, year, weekdayString) {
+  const ids = [
+    `${monthString}_${day},_${year}_(${weekdayString})`,
+    `${weekdayString},_${monthString}_${day},_${year}`
+  ]
+  const citations = []
+  for (const id of ids) {
+    const $nephewSpan = $monthRoot.getElementById(id)
+    const citation = `${monthUrl}#${id}`
+    citations.push(citation)
+    if (!$nephewSpan) {
+      continue
+    }
+    const $parent = $nephewSpan.parentNode
+    const $theElement = $parent.nextSibling
+
+    return { found: true, $theElement, citation }
+  }
+  console.log(`cannot find any of\n  ${citations.join('\n  ')}`)
+  return { found: false }
+}
+
+function trouverElementDansArticleDuMois ($monthRoot, monthUrl, monthString, day, year, weekdayString) {
+  const css = `li a[title="${day} ${monthString}"]`
+  const $a = $monthRoot.querySelector(css)
+  if (!$a) {
+    console.log(`${css} not found in ${monthUrl}`)
+    return { found: false }
+  }
+  const $theElement = $a.parentNode
+  return { found: true, $theElement, citation: monthUrl }
+}
+
+export async function thisDay (yearsAgo, lang, locale) {
   const now = new Date(Date.now())
   const year = now.getFullYear() - yearsAgo
-  const monthString = now.toLocaleDateString('en-US', { month: 'short' })
+  const monthString = now.toLocaleDateString(locale, { month: 'long' })
+
   const month = now.getMonth()
   const day = now.getDate()
 
   const then = new Date(year, month, day)
-  const weekdayString = then.toLocaleDateString('en-US', { weekday: 'long' })
+  const weekdayString = then.toLocaleDateString(locale, { weekday: 'long' })
 
-  // const monthResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/mobile-html/${monthString}_${year}`)
-  const monthUrl = `https://en.m.wikipedia.org/wiki/${monthString}_${year}`
+  const monthUrl = ({
+    en: `https://en.m.wikipedia.org/wiki/${monthString}_${year}`,
+    fr: `https://fr.wikipedia.org/wiki/${monthString}_${year}`
+  })[lang]
   const monthResponse = await fetch(monthUrl)
   if (monthResponse.status !== 200) {
     console.log(`Got status ${monthResponse.status} from ${monthUrl}`)
   } else {
     const monthHtml = await monthResponse.text()
 
-    const monthRoot = parse(monthHtml)
-    const ids = [
-      `${monthString}_${day},_${year}_(${weekdayString})`,
-      `${weekdayString},_${monthString}_${day},_${year}`
-    ]
-    const citations = []
-    for (const id of ids) {
-      const nephewSpan = monthRoot.getElementById(id)
-      const citation = `${monthUrl}#${id}`
-      citations.push(citation)
-      if (!nephewSpan) {
-        continue
-      }
-      const found = true
-      const parent = nephewSpan.parentNode
-      const section = parent.nextSibling
-      const text = filter(section.innerText)
+    const $monthRoot = parse(monthHtml)
 
+    const prune = ({
+      en: pruneDom,
+      fr: taillerDom
+    })[lang]
+    prune($monthRoot)
+
+    const findElement = ({
+      en: findElementInMonthArticle,
+      fr: trouverElementDansArticleDuMois
+    })[lang]
+    const { found, $theElement, citation } = findElement($monthRoot, monthUrl, monthString, day, year, weekdayString)
+    if (found) {
+      const text = filter($theElement.innerText)
+      console.log(text)
       return { found, text, then, citation }
     }
-    console.log(`cannot find any of\n  ${citations.join('\n  ')}`)
   }
 
   const yearUrl = `https://en.m.wikipedia.org/wiki/${year}`
