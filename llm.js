@@ -4,6 +4,11 @@ import { Configuration, OpenAIApi } from 'openai'
 const STYLE = 'supermarket tabloid headlines'
 // const STYLE = 'a viral Twitter post'
 
+// const PUBLICATION = "d'un magazine comme Closer"
+// const PUBLICATION = 'du Canard enchainé'
+// const PUBLICATION = 'de journaux populaires'
+const PUBLICATION = "de première page d'un journal populaire"
+
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 })
@@ -18,7 +23,7 @@ export async function addPersonality (text, lang) {
     
     `,
     fr: `
-    Réécrivez le texte suivant dans le style des titres de journaux populaires:
+    Réécrivez le texte suivant dans le style des titres ${PUBLICATION}:
   
     ${text}
     
