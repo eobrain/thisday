@@ -106,7 +106,10 @@ export async function thisDay (yearsAgo, lang, locale) {
     }
   }
 
-  const yearUrl = `https://en.m.wikipedia.org/wiki/${year}`
+  const yearUrl = ({
+    en: `https://en.m.wikipedia.org/wiki/${year}`,
+    fr: `https://fr.wikipedia.org/wiki/${year}`
+  })[lang]
   const yearResponse = await fetch(yearUrl)
   if (yearResponse.status !== 200) {
     console.log(`Got status ${yearResponse.status} from ${yearUrl}`)
@@ -115,17 +118,23 @@ export async function thisDay (yearsAgo, lang, locale) {
 
     const yearRoot = parse(yearHtml)
 
-    const pattern = `${monthString} ${day} . `
+    const dayPatt = (lang === 'fr' && day === 1) ? '1er' : day
+
+    const pattern = new RegExp(({
+      en: `^${monthString}\\s${day}\\s.\\s`,
+      fr: `^${dayPatt}\\s${monthString}\\s?[:,]\\s`
+    })[lang], 'i')
+
     const citation = yearUrl
     for (const li of yearRoot.querySelectorAll('li')) {
-      if (li.innerText.match(pattern) && !li.innerText.match(/ \(d\. /)) {
+      if (li.innerText.match(pattern) && !li.innerText.match(/ \([d†]\.? /)) {
         const found = true
-        const text = li.innerText.slice(pattern.length)
+        const text = li.innerText.replace(pattern, '')
         console.log(text)
         return { found, text, then, citation }
       }
     }
-    console.log(`cannot find /${pattern}/ in ${citation}`)
+    console.log(`cannot find ${pattern} in ${citation}`)
   }
   return { found: false, then }
 }

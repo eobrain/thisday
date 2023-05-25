@@ -30,12 +30,20 @@ export async function addPersonality (text, lang) {
     `
   })[lang]
 
-  const completion = await openai.createChatCompletion({
-    model: 'gpt-3.5-turbo',
-    messages: [{
-      role: 'user',
-      content
-    }]
-  })
-  return completion.data.choices[0].message.content
+  try {
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [{
+        role: 'user',
+        content
+      }]
+    })
+    return completion.data.choices[0].message.content
+  } catch (error) {
+    if (error.response) {
+      throw new Error(`${error.response.status}: ${error.response.data}`)
+    } else {
+      throw new Error(error.message)
+    }
+  }
 }
