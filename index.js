@@ -20,7 +20,7 @@ async function thisDayBot (yearsAgo, lang) {
   if (found) {
     const longDateString = then.toLocaleDateString(locale,
       { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-    const headlines = await addPersonality(`${longDateString}, ${text}`, lang)
+    const headlines = await addPersonality(longDateString, yearsAgo, text, lang)
     const dateWithoutYear = then.toLocaleDateString(locale,
       { month: 'long', day: 'numeric' })
     const intro = ({
@@ -38,5 +38,9 @@ async function thisDayBot (yearsAgo, lang) {
 if (process.argv.length <= 3) {
   console.log('Missing arguments:   yearsAgo language')
 } else {
-  thisDayBot(process.argv[2], process.argv[3])
+  try {
+    thisDayBot(process.argv[2], process.argv[3])
+  } catch (e) {
+    console.log('Exception: ', e)
+  }
 }
