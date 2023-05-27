@@ -21,9 +21,11 @@ async function thisDayBot (yearsAgo, lang) {
     const longDateString = then.toLocaleDateString(locale,
       { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     const headlines = await addPersonality(`${longDateString}, ${text}`, lang)
+    const dateWithoutYear = then.toLocaleDateString(locale,
+      { month: 'long', day: 'numeric' })
     const intro = ({
-      en: `This day, ${yearsAgo} years ago…`,
-      fr: `Aujourd'hui, il y a ${yearsAgo} ans…`
+      en: `This day, ${dateWithoutYear}, ${yearsAgo} years ago…`,
+      fr: `Aujourd'hui, ${dateWithoutYear}, il y a ${yearsAgo} ans…`
     })[lang]
     const postMinusCitation = intro + '\n\n' + headlines
     const post = truncate(postMinusCitation, MAX_POST - 2 - URL_COUNT) + '\n\n' + citation
