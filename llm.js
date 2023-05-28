@@ -18,7 +18,7 @@ export async function addPersonality (longDateString, yearsAgo, text, lang) {
   const content = pp(({
     en: `
     Pretend it is ${yearsAgo} years ago, and the date is ${longDateString}.
-    You have the sensibilities of someone how was living  ${yearsAgo} years ago.
+    You have the sensibilities of someone who was living  ${yearsAgo} years ago.
     You do not know the future, that is, you do not know anything later than ${longDateString}.
 
     Here are some events that happened today, ${longDateString},
