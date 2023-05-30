@@ -20,7 +20,6 @@ function filter (text) {
 }
 
 function pruneDom ($monthRoot) {
-
 }
 
 function taillerDom ($monthRoot) {
@@ -30,6 +29,17 @@ function taillerDom ($monthRoot) {
   }
   const $ul = $span.parentNode.nextElementSibling.nextElementSibling
   $ul.parentNode.removeChild($ul)
+}
+
+function annotateDeaths ($yearRoot) {
+  const $span = $yearRoot.getElementById('Deaths')
+  if (!$span) {
+    return
+  }
+  const $ul = $span.parentNode.nextElementSibling
+  for (const $li of $ul.querySelectorAll('li')) {
+    $li.insertAdjacentHTML('beforeend', ' (Died)')
+  }
 }
 
 function findElementInMonthArticle ($monthRoot, monthUrl, monthString, day, year, weekdayString) {
@@ -116,7 +126,8 @@ export async function thisDay (yearsAgo, lang, locale) {
   } else {
     const yearHtml = await yearResponse.text()
 
-    const yearRoot = parse(yearHtml)
+    const $yearRoot = parse(yearHtml)
+    annotateDeaths($yearRoot)
 
     const dayPatt = (lang === 'fr' && day === 1) ? '1er' : day
 
@@ -126,10 +137,10 @@ export async function thisDay (yearsAgo, lang, locale) {
     })[lang], 'i')
 
     const citation = yearUrl
-    for (const li of yearRoot.querySelectorAll('li')) {
-      if (li.innerText.match(pattern) && !li.innerText.match(/ \([d†]\.? /)) {
+    for (const $li of $yearRoot.querySelectorAll('li')) {
+      if ($li.innerText.match(pattern) && !$li.innerText.match(/ \([d†]\.? /)) {
         const found = true
-        const text = li.innerText.replace(pattern, '')
+        const text = $li.innerText.replace(pattern, '')
         console.log(text)
         return { found, text, then, citation }
       }
