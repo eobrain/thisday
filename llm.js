@@ -42,7 +42,7 @@ export async function addPersonality (longDateString, yearsAgo, text, lang) {
 
   try {
     const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4',
       messages: [{
         role: 'user',
         content
